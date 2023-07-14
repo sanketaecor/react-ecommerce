@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const navigations = [
   {
@@ -21,6 +22,8 @@ const navigations = [
 ];
 
 const Header = () => {
+  const { loginWithRedirect, isAuthenticated, user, logout } = useAuth0();
+
   return (
     <div>
       <header className="text-gray-600 body-font shadow-lg">
@@ -55,20 +58,48 @@ const Header = () => {
             })}
           </nav>
 
-          <Link to={"/cart"} className="inline-flex items-center text-white bg-indigo-500 border-0 py-2 px-4 focus:outline-none hover:bg-indigo-700 rounded-full text-base mt-4 md:mt-0">
-            Go to Cart
-            <svg
-              fill="none"
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              className="w-4 h-4 ml-1"
-              viewBox="0 0 24 24"
+          {isAuthenticated && (
+            <Link
+              to={"/cart"}
+              className="inline-flex items-center text-white bg-indigo-500 border-0 py-2 px-4 focus:outline-none hover:bg-indigo-700 rounded-full text-base mt-4 md:mt-0 mr-3"
             >
-              <path d="M5 12h14M12 5l7 7-7 7"></path>
-            </svg>
-          </Link>
+              Go to Cart
+              <svg
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                className="w-4 h-4 ml-1"
+                viewBox="0 0 24 24"
+              >
+                <path d="M5 12h14M12 5l7 7-7 7"></path>
+              </svg>
+            </Link>
+          )}
+          {isAuthenticated ? (
+            <button
+              className="inline-flex items-center text-white bg-indigo-500 border-0 py-2 px-4 focus:outline-none hover:bg-indigo-700 rounded-full text-base mt-4 md:mt-0 mr-3"
+              onClick={() =>
+                logout({ logoutParams: { returnTo: window.location.origin } })
+              }
+            >
+              Log Out
+            </button>
+          ) : (
+            <button
+              className="inline-flex items-center text-white bg-indigo-500 border-0 py-2 px-4 focus:outline-none hover:bg-indigo-700 rounded-full text-base mt-4 md:mt-0 mr-3"
+              onClick={() => loginWithRedirect()}
+            >
+              Log In
+            </button>
+          )}
+
+          {isAuthenticated && (
+            <div className=" w-10 h-10 rounded-full">
+              <img src={user.picture} alt={user.name} />
+            </div>
+          )}
         </div>
       </header>
     </div>

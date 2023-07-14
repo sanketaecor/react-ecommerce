@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Error from "./Error";
+import { useAuth0 } from "@auth0/auth0-react";
 
 const Product = () => {
   const { id } = useParams();
   const [product, setProduct] = useState({});
+  const { isAuthenticated } = useAuth0();
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -16,23 +19,30 @@ const Product = () => {
   }, []);
 
   const handleCart = (product) => {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    const isProductExist = cart.find((item) => item.id === product.id);
-    if (isProductExist) {
-      const updatedCart = cart.map((item) => {
-        if (item.id === product.id) {
-          return {
-            ...item,
-            quantity: item.quantity + 1,
-          };
-        }
-        return item;
-      });
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
-    }else{
-      localStorage.setItem("cart", JSON.stringify([...cart,{...product,quantity:1}]));
+    if (isAuthenticated) {
+      const cart = JSON.parse(localStorage.getItem("cart")) || [];
+      const isProductExist = cart.find((item) => item.id === product.id);
+      if (isProductExist) {
+        const updatedCart = cart.map((item) => {
+          if (item.id === product.id) {
+            return {
+              ...item,
+              quantity: item.quantity + 1,
+            };
+          }
+          return item;
+        });
+        localStorage.setItem("cart", JSON.stringify(updatedCart));
+      } else {
+        localStorage.setItem(
+          "cart",
+          JSON.stringify([...cart, { ...product, quantity: 1 }])
+        );
+      }
+      alert("Product added to Cart.");
+    } else {
+      alert("Please Login to add product in the Cart.");
     }
-    alert("Product added to Cart.");
   };
 
   if (!Object.keys(product).length > 0) return <Error />;
@@ -110,7 +120,9 @@ const Product = () => {
                 >
                   <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                 </svg>
-                <span className="text-gray-600 ml-3">{product.rating.rate} Reviews</span>
+                <span className="text-gray-600 ml-3">
+                  {product.rating.rate} Reviews
+                </span>
               </span>
               <span className="flex ml-3 pl-3 py-2 border-l-2 border-gray-200 space-x-2s">
                 <a className="text-gray-500">
